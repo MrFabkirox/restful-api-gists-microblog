@@ -20,19 +20,13 @@ app.use((req, res, next) => {
 const postRoutes = require('./api/routes/posts');
 const commentRoutes = require('./api/routes/comments');
 
-// connection to mongodb
 mongoose.connect(
-    // 'mongodb://localhost/tigernodesandreact'
-    // 'mongodb+srv://tigeradmin:'
-    //   + process.env.MONGO_ATLAS_PW
-    //   + '@tigernodesandreact-4kfsd.mongodb.net/tigernodesandreact?retryWrites=true', { 
-    //      useNewUrlParser: true 
-    // }
-
-    // mongoAtlas
-    'mongodb://tigeradmin:<PASSWORD>@tigernodesandreact-shard-00-00-4kfsd.mongodb.net:27017,tigernodesandreact-shard-00-01-4kfsd.mongodb.net:27017,tigernodesandreact-shard-00-02-4kfsd.mongodb.net:27017/test?ssl=true&replicaSet=tigernodesandreact-shard-0&authSource=admin&retryWrites=true', { 
-              useNewUrlParser: true 
-         }
+    'mongodb+srv://tigeradmin:'
+      + process.env.MONGO_ATLAS_PW
+      + '@tigernodesandreact-4kfsd.mongodb.net/', {
+        dbName: 'tigernodesandreact',
+        useNewUrlParser: true
+    }
 );
 
 app.use(morgan('dev'));

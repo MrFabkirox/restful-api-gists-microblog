@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 
 const Post = require('../models/posts');
 
@@ -11,7 +12,7 @@ router.get('/', (req, res, next) => {
 
 router.post('/', (req, res, next) => {
     const post = new Post({
-        _id: mongoose.Types.ObjectId,
+        _id: new mongoose.Types.ObjectId,
         postTitle: req.body.postTitle,
         postBody: req.body.postBody,
         userId: req.body.userId
