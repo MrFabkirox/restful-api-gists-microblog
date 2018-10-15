@@ -1,22 +1,56 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
+
+const Comment = require('../models/comments');
 
 router.get('/', (req, res, next) => {
-    res.status(200).json({
-        message: 'get request to /comments'
-    });
+    Comment.find()
+      .select('commentPostBody _id commentPostId userId')
+      .exec()
+      .then(docs => {
+          res.status(200).json({
+            count: docs.length,
+            comment: docs.map(doc => {
+                return {
+                    _id: doc._id,
+                    commentPostId: doc.commentPostBody,
+                    commentPostBody: doc.commentPostBody,
+                    userId: doc.userId
+                }
+            })
+        });
+      })
+      .catch(err => {
+          res.status(500).json({
+              error: err
+          })
+      })
 });
 
 router.post('/', (req, res, next) => {
-    const comment = {
-        postId: req.body.postId,
-        userID: req.body.userId,
-        postComment: req.body.postComment,
-    };
-    res.status(201).json({
-        message: 'post request to /comments',
-        comment: comment
+    const comment = new Comment({
+        _id: mongoose.Types.ObjectId(),
+        commentPostId: req.body.commentPostId,
+        commentPostBody: req.body.commentPostBody
     });
+    comment
+      .save()
+      .then(result => {
+          res.status(201).json({
+            message: 'Comment saved',
+            _id: result._id,
+            commentPostId: result.commentPostBody,
+            commentPostBody: result.commentPostBody,
+            userId: result.userId
+          })
+        })
+        .catch(err => {
+            console.log(err);
+            res.status(500).json({
+                error: err
+              })
+          })
 });
 
 router.get('/:commentId', (req, res, next) => {
