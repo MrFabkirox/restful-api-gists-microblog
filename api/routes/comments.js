@@ -3,6 +3,7 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 const Comment = require('../models/comments');
+const Post = require('../models/posts');
 
 router.get('/', (req, res, next) => {
     Comment.find()
@@ -29,53 +30,80 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-    const comment = new Comment({
+  Post.findById(req.body.commentPostId)
+    .then(post => {
+      if (!post) {
+          return res.status(404).json({
+              message: 'Post not found'
+          });
+      }
+      const comment = new Comment({
         _id: mongoose.Types.ObjectId(),
         commentPostId: req.body.commentPostId,
-        commentPostBody: req.body.commentPostBody
+        commentPostBody: req.body.commentPostBody,
+        userId: req.body.userId
+      });
+      return comment.save();
+    })
+    .then(result => {
+      res.status(201).json({
+        message: 'Comment saved',
+        createdComment: {
+          _id: result._id,
+          commentPostId: result.commentPostBody,
+          commentPostBody: result.commentPostBody,
+          userId: result.userId
+        }
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).json({
+        error: err
+      });
     });
-    comment
-      .save()
-      .then(result => {
-          res.status(201).json({
-            message: 'Comment saved',
-            _id: result._id,
-            commentPostId: result.commentPostBody,
-            commentPostBody: result.commentPostBody,
-            userId: result.userId
-          })
-        })
-        .catch(err => {
-            console.log(err);
-            res.status(500).json({
-                error: err
-              })
-          })
 });
 
 router.get('/:commentId', (req, res, next) => {
-    const id = req.params.commentId;
-    if (id === 'special') {
-        res.status(200).json({
-          message: 'special id',
-          id: id
-        });
-    } else {
-        res.status(200).json({
-            message: 'id passed'
-        });
-    }
+  Comment.findById(req.params.commentId)
+    .exec()
+    .then(comment => {
+        if (!comment) {
+            return res.status(404).json({
+                message: "Comment not found"
+            })
+        }
+      res.status(200).json({
+        comment: comment
+      })
+    })
+    .catch(err => {
+        res.status(500).json({
+            error: err
+        })
+    })
 });
 
-router.patch('/:productId', (req, res, next) => {
+router.patch('/:commentId', (req, res, next) => {
     res.status(200).json({
         message: 'patch update to /comments/:id'
     });
 });
 
-router.delete('/:productId', (req, res, next) => {
-    res.status(200).json({
-        message: 'delete to /comments/:id'
+router.delete('/:commentId', (req, res, next) => {
+  Comment.deleteOne({
+      _id: req.params.commentId
+  }, function (err) {})
+    .exec()
+    .then(result => {
+        res.status(200).json({
+            message: "Comment deleted"
+        })
+    })
+    .catch(err => {
+        res.status(500).json({
+            error: err
+        });
     });
 });
 
