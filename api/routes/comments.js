@@ -7,26 +7,27 @@ const Post = require('../models/posts');
 
 router.get('/', (req, res, next) => {
     Comment.find()
-      .select('commentPostBody _id commentPostId userId')
+      .select('_id commentPostId commentPostBody userId')
+      .populate('commentPostId')
       .exec()
       .then(docs => {
-          res.status(200).json({
-            count: docs.length,
-            comment: docs.map(doc => {
-                return {
-                    _id: doc._id,
-                    commentPostId: doc.commentPostBody,
-                    commentPostBody: doc.commentPostBody,
-                    userId: doc.userId
-                }
-            })
+        res.status(200).json({
+          count: docs.length,
+          comment: docs.map(doc => {
+            return {
+              _id: doc._id,
+              commentPostId: doc.commentPostBody,
+              commentPostBody: doc.commentPostBody,
+              userId: doc.userId
+            }
+          })
         });
       })
       .catch(err => {
-          res.status(500).json({
-              error: err
-          })
-      })
+        res.status(500).json({
+          error: err
+        })
+    })
 });
 
 router.post('/', (req, res, next) => {
@@ -65,17 +66,23 @@ router.post('/', (req, res, next) => {
 });
 
 router.get('/:commentId', (req, res, next) => {
-  Comment.findById(req.params.commentId)
+  const id = req.params.commentId;
+  Comment.findById(id)
+    .select('_id commentPostId commentPostBody userId')
     .exec()
-    .then(comment => {
-        if (!comment) {
-            return res.status(404).json({
-                message: "Comment not found"
+    .then(result => {
+        console.log('From database', result);
+        if (result) {
+            res.status(200).json({
+                comment: result
+            })
+        } else {
+          res
+            .status(404)
+            .json({
+                message: 'No entry'
             })
         }
-      res.status(200).json({
-        comment: comment
-      })
     })
     .catch(err => {
         res.status(500).json({
@@ -85,9 +92,25 @@ router.get('/:commentId', (req, res, next) => {
 });
 
 router.patch('/:commentId', (req, res, next) => {
-    res.status(200).json({
-        message: 'patch update to /comments/:id'
-    });
+  const commentId = req.params.commentId;
+  const updateOps = {};
+  for (const ops of req.body) {
+      updateOps[ops.propName] = ops.value;
+  }
+  Comment.update({ _id: commentId }, { $set: updateOps })
+    .exec()
+    .then(result => {
+      res.status(200).json({
+        message: 'Comment updated',
+        newComment: result
+      })
+    })
+    .catch(err => {
+        console.log(err);
+        res.status(500).json({
+            error: err
+        })
+    })
 });
 
 router.delete('/:commentId', (req, res, next) => {

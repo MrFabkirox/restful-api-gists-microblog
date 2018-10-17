@@ -19,6 +19,7 @@ app.use((req, res, next) => {
 
 const postRoutes = require('./api/routes/posts');
 const commentRoutes = require('./api/routes/comments');
+const userRoutes = require('./api/routes/user');
 
 mongoose.connect(
     'mongodb+srv://tigeradmin:'
@@ -36,6 +37,7 @@ app.use(bodyParser.json());
 
 app.use('/posts', postRoutes);
 app.use('/comments', commentRoutes);
+app.use('/user', userRoutes);
 
 app.use((req, res, next) => {
     const error = new Error('Sorry, not found');
