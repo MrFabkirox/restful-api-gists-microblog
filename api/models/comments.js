@@ -17,5 +17,5 @@ const commentSchema = mongoose.Schema({
         default: 1
     }
 });
-
+// s ou pas s a comments ?!
 module.exports = mongoose.model('Comment', commentSchema);
