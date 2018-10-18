@@ -11,6 +11,10 @@ const commentSchema = mongoose.Schema({
         type: String,
          required: true
     },
+    commentCreationDate: {
+        type: Date,
+        default: Date.now
+    },
     userId: {
         type: Number,
         required: false,

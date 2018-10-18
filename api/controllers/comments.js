@@ -5,8 +5,9 @@ const Post = require("../models/posts");
 // no s
 exports.comments_get_all = (req, res, next) => {
     Comment.find()
-      .select('_id commentPostId commentPostBody userId')
-      .populate('post', '_id')
+      .select('_id commentPostId commentPostBody commentCreationDate userId')
+      .sort({ commentCreationDate: -1 })
+      .populate('commentId', '_id')
       .exec()
       .then(docs => {
         res.status(200).json({
@@ -14,10 +15,11 @@ exports.comments_get_all = (req, res, next) => {
           comment: docs.map(doc => {
             return {
               _id: doc._id,
-              commentPostId: doc.commentPostBody,
+              commentPostId: doc.commentPostId,
               commentPostBody: doc.commentPostBody,
               userId: doc.userId,
-              post: doc.post
+              commentCreationDate: doc.commentCreationDate,
+//              post: doc.post
             }
           })
         });
@@ -41,6 +43,7 @@ exports.comments_create = (req, res, next) => {
         _id: mongoose.Types.ObjectId(),
         commentPostId: req.body.commentPostId,
         commentPostBody: req.body.commentPostBody,
+        commentCreationDate: req.body.commentCreationDate,
         userId: req.body.userId
       });
       return comment.save();
@@ -49,9 +52,10 @@ exports.comments_create = (req, res, next) => {
       res.status(201).json({
         message: 'Comment saved',
         createdComment: {
-          _id: result._id,
+          postId: result.postId,
           commentPostId: result.commentPostBody,
           commentPostBody: result.commentPostBody,
+          commentCreationDate: result.commentCreationDate,
           userId: result.userId
         }
       });
@@ -67,7 +71,7 @@ exports.comments_create = (req, res, next) => {
 exports.comments_get_comment = (req, res, next) => {
   const id = req.params.commentId;
   Comment.findById(id)
-    .select('_id commentPostId commentPostBody userId')
+    .select('_id commentPostId commentPostBody commentCreationDate userId')
     .exec()
     .then(result => {
         console.log('From database', result);

@@ -22,14 +22,21 @@ exports.user_signup = (req, res, next) => {
             const user = new User({
               _id: new mongoose.Types.ObjectId(),
               email: req.body.email,
-              password: hash
+              password: hash,
+              userCreationDate: req.body.userCreationDate
             });
             user
               .save()
               .then(result => {
                 console.log(result);
                 res.status(201).json({
-                message: 'User created'
+                message: 'User created',
+                createdUser: {
+                  _id: result._id,
+                  email: result.email,
+                  password: result.password,
+                  userCreationDate: result.userCreationDate
+                }
               });
             })
             .catch(err => {
@@ -91,7 +98,8 @@ exports.user_signup = (req, res, next) => {
 
   exports.users_get_all = (req, res, next) => {
     User.find()
-      .select('_id email password')
+      .select('_id email password userCreationDate')
+      .sort({ userCreationDate: -1 })
       .exec()
       .then(docs => {
         const response = {
@@ -101,6 +109,7 @@ exports.user_signup = (req, res, next) => {
                 _id: doc._id,
                 email: doc.email,
                 password: doc.password,
+                userCreationDate: doc.userCreationDate
               }
           })
         };
@@ -112,7 +121,7 @@ exports.user_signup = (req, res, next) => {
 exports.user_get_user = (req, res, next) => {
     const id = req.params.userId;
     User.findById(id)
-      .select('_id email password')
+      .select('_id email password userCreationDate')
       .exec()
       .then(result => {
         console.log("From db", result);

@@ -5,7 +5,8 @@ const Comment = require('../models/comments');
 // no s
 exports.posts_get_all = (req, res, next) => {
     Post.find()
-      .select('_id postTitle postBody userId')
+      .select('_id postTitle postBody postCreationDate userId')
+      .sort({ postCreationDate: -1 })
       .exec()
       .then(docs => {
         const response = {
@@ -15,6 +16,7 @@ exports.posts_get_all = (req, res, next) => {
                 _id: doc._id,
                 postTitle: doc.postTitle,
                 postBody: doc.postBody,
+                postCreationDate: doc.postCreationDate,
                 userId: doc.userId
               }
           })
@@ -29,6 +31,7 @@ exports.posts_create = (req, res, next) => {
     _id: new mongoose.Types.ObjectId(),
     postTitle: req.body.postTitle,
     postBody: req.body.postBody,
+    postCreationDate: req.body.postCreationDate,
     userId: req.body.userId
   });
   post
@@ -38,8 +41,10 @@ exports.posts_create = (req, res, next) => {
       res.status(201).json({
         message: "post posted",
           createdPost: {
+            _id: result._id,
             postTitle: result.postTitle,
             postBody: result.postBody,
+            postCreationDate: result.postCreationDate,
             userId: result.userId
           }
         });
@@ -55,7 +60,7 @@ exports.posts_create = (req, res, next) => {
 exports.posts_get_post = (req, res, next) => {
   const id = req.params.postId;
   Post.findById(id)
-    .select('_id postTitle postBody userId')
+    .select('_id postTitle postBody postCreationDate userId')
     .exec()
     .then(result => {
       console.log("From db", result);
